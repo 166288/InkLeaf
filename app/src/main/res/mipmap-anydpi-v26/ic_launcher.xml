@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  启动图标：自适应图标（API 26+，本工程 minSdk 31，无需再留位图兜底）。
+
+  三层：
+  - background = `@mipmap/ic_launcher_art`，整枚定稿图（纸底 + 书 + 叶 + 软阴影）
+    由启动器的遮罩裁外圈；图案包围盒 64dp，落在 72dp 可见圆内，圆形遮罩不削角。
+  - foreground = 空（见 `drawable/ic_launcher_foreground.xml`）。
+  - monochrome = `@mipmap/ic_launcher_monochrome`，Android 13「主题图标」用的单色剪影。
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@mipmap/ic_launcher_art" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@mipmap/ic_launcher_monochrome" />
+</adaptive-icon>

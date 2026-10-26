@@ -1,0 +1,41 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Kotlin 2.x 的增量编译会话目录（出现在仓库根，不是 build/ 的子目录）
+.kotlin/
+
+# 本机配置（含绝对路径）
+local.properties
+
+# IDE
+.idea/
+*.iml
+captures/
+
+# 本机工具链下载目录（aapt2 解包、gradle 发行版等）
+.tooling/
+
+# AI 协作工具的工作区（本地笔记与缓存，与工程本身无关）
+.workbuddy/
+
+# 产物
+*.apk
+*.aab
+*.hprof
+
+# ★ 签名材料绝不入库。
+#   一旦签名私钥进了 git 历史，就只能换密钥 + 作废已发布版本，
+#   而且历史里的密钥永远删不干净（除非重写历史）。
+*.jks
+*.keystore
+keystore.properties
+
+# ★ 例外：dist/ 里那一份 **正式发布包**随仓库走。
+#   与上面的 `*.apk` 是有意的冲突——`*.apk` 挡住的是随手构建的产物
+#   （app/build 里的、Android Studio Run 出来的），而 dist/ 里带版本号的这个
+#   是"发出去的那一份"，需要别人能直接从仓库下下来装。
+#   代价：47 MB 的二进制进 git 之后永远不会变小，所以**每版只放一个文件**，
+#   发新版时删掉旧的，不要在这里堆历史版本（历史版本在 tag 里）。
+!/dist/*.apk

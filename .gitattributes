@@ -1,0 +1,39 @@
+# 换行符与二进制处理
+#
+# 为什么必须显式写这个文件：本机 Git 的 core.autocrlf=true（Git for Windows 默认值）。
+# 不加这个文件时，gradlew（Linux/macOS 用的 shell 脚本）会在检出时变成 CRLF，
+# 到了 CI/Linux 上会直接报 "bad interpreter: /bin/sh^M"。
+# 更糟的是它不会在本机复现 —— 属于典型的"只炸在别人机器上"的问题。
+
+# 默认：仓库内存 LF，检出也用 LF
+* text=auto eol=lf
+
+# Windows 专有脚本保留 CRLF，否则 cmd.exe 解析会出问题
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 二进制：禁止任何换行转换
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.so binary
+*.apk binary
+*.aab binary
+*.zip binary
+
+# Gradle wrapper 的 jar 是构建产物但必须入库，原样保留
+gradle/wrapper/gradle-wrapper.jar binary
+
+# 语言统计（让 Gitea 的语言识别正确）
+*.kt text
+*.kts text
+*.md text
+*.toml text

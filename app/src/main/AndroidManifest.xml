@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      android:enableOnBackInvokedCallback="true"
+
+      这不是可选的美化项。方案 §3.1 的硬约束：
+      targetSdk >= 36 且运行在 Android 16+ 上时，predictive back 系统动画默认开启，
+      且 onBackPressed() 不再被调用、KEYCODE_BACK 不再派发。
+      所以 M0 就把开关打开，逼迫后续所有返回逻辑都走 OnBackPressedCallback /
+      PredictiveBackHandler，避免到 M6 才发现阅读界面的返回手势把整个 App 退出去。
+    -->
+    <application
+        android:allowBackup="true"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:name=".InkLeafApplication"
+        android:theme="@style/Theme.InkLeaf">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode|density|fontScale"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          分享导出的那一页给别的 App（系统相册、第三方 OCR）—— 手写检索的 L2。
+
+          用 FileProvider 而不是直接给 `file://`：Android 7 之后跨应用传 `file://`
+          会直接抛 `FileProviderUriExposedException`。而给 URI 临时授权
+          （FLAG_GRANT_READ_URI_PERMISSION）**不需要任何权限声明** ——
+          "不申请权限"是本应用的一条硬约束，不能为了分享破掉。
+
+          对外可见的目录只有 `res/xml/file_paths.xml` 里那一个，见那里的注释。
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+</manifest>

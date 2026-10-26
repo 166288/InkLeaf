@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Activity 主题。
+
+  存在的唯一理由：Compose 的窗口在首帧之前需要一块底色。若用默认主题，
+  冷启动时会出现一帧白屏然后突然变成深色——这是"看着像卡了一下"的典型来源。
+  这里把底色设成浅色纸面（与 InkLeafTokens.PaperLight 同值），
+  首帧即与内容同色。深色模式的首帧差异由 setDecorFitsSystemWindows 之外的
+  系统 splash 负责，v1 不做自定义 splash（列入已知取舍）。
+-->
+<resources>
+    <style name="Theme.InkLeaf" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/inkleaf_paper</item>
+        <item name="android:statusBarColor">@color/inkleaf_paper</item>
+        <item name="android:navigationBarColor">@color/inkleaf_paper</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

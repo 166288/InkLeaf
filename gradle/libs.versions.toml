@@ -1,0 +1,153 @@
+# InkLeaf 版本目录 —— 全工程唯一的版本事实来源
+#
+# 原则（见 design/方案设计.md §3）：
+#   1. 全部精确版本，禁止 "+" / "latest.release" / 动态版本
+#      —— 因为 ink-storage 的 protobuf 编码只有自己能读，Ink 一旦破坏性升级，
+#         历史笔迹可能读不出来（§7.3）。所以版本必须锁死并用 golden 文件回归。
+#   2. androidx.pdf 的 pdf-ink 依赖 androidx.ink:*-:1.0.0，
+#      所以 Ink 版本实际上被它锁在 1.0.0（§3.1）。不要单独升到 1.1.0-alpha。
+#
+# 说明：标 [已锁定未启用] 的条目是方案里已经定版、但当前里程碑还用不到的依赖。
+# 版本先写死在此处作为唯一事实来源，启用到模块里时不再重新讨论版本。
+
+[versions]
+# ---- 构建链（与本机环境实测匹配，见 §3.1 与 M0 说明）----
+# Android Studio 2026.2 支持 AGP 7.1–9.4；AGP 9.4 要求 Gradle >= 9.6.0
+# AGP 9.x 的最大 API level = 37；本机已装 platform android-37.0 与 build-tools 36.0.0
+# 本机 JDK = Android Studio 自带 JBR 25.0.3；Gradle 运行在 Java 25 上需要 >= 9.1.0，9.6.0 满足
+agp = "9.4.0"
+kotlin = "2.4.21"
+# 本机目标平台：minSdk 31 / targetSdk 36（方案 §3.1 的决策）/ compileSdk 37
+# compileSdk 必须是 37：Compose 1.12+ 要求 compileSdk 37 + AGP 9
+compileSdk = "37"
+targetSdk = "36"
+minSdk = "31"
+
+# ---- 应用层（当前启用）----
+composeBom = "2026.09.00"
+activityCompose = "1.13.0"
+junit = "4.13.2"
+# Robolectric：让"必须依赖 Android 真实实现"的测试也能在 JVM 上执行。
+#   1. native graphics 走真实 Skia → StaticLayout 是**真的**在排版（不是桩）；
+#   2. SQLite / SQLiteOpenHelper / 外键 / BLOB 都是真实实现。
+# 选择它而不是 connectedAndroidTest 的原因写在 core/data 与 core/document 的测试文件头：
+# 本机没有虚拟化（HypervisorPresent=False，AEHD 未装，开 WHPX 需要管理员+重启），
+# 设备测试在这台机器上**永远跑不起来**，而跑不起来的测试会烂掉。
+robolectric = "4.17"
+coreKtx = "1.19.1"
+
+# ---- [已启用] 基建 ----
+navigation = "2.10.2"
+lifecycle = "2.11.0"
+documentfile = "1.1.0"
+serialization = "1.11.0"
+profileinstaller = "1.4.1"
+
+# ---- [已启用] 测试 ----
+androidxTestJunit = "1.3.0"
+androidxTestRunner = "1.7.0"
+androidxTestCore = "1.7.0"
+espresso = "3.7.0"
+
+# ---- [已启用] 手写 ----
+# Jetpack Ink 1.0.0 = 稳定版 2025-12-17；1.1.0-alpha09 为当前最新（实验 API，不用）
+ink = "1.0.0"
+
+# ---- [已锁定未启用] PDF ----
+# androidx.pdf 目前只有 beta01；其 pdf-ink 反向锁定 androidx.ink:*=1.0.0（§3.1）
+androidxPdf = "1.0.0-beta01"
+
+# ---- [已锁定未启用] EPUB ----
+readium = "3.4.0"
+
+# ---- 文本处理 ----
+commonmark = "0.30.1"
+coroutines = "1.11.0"
+
+# ★ 已移除：room = "2.8.5" 与 hilt = "2.60.1"
+#   原因（2026-10-17 实测，不是偏好）：
+#     1. Room / Hilt 都要注解处理（KSP 或 KAPT）。AGP 9 的内建 Kotlin 不提供 KAPT。
+#     2. KSP 官方最新发布版 = 2.3.12，其 POM 里 kotlin-stdlib 是 2.3.20；
+#        而本工程 Kotlin 版本被 AGP 9 的内建 Kotlin 钉在 2.4.21（见 [plugins] 注释），
+#        不存在与 Kotlin 2.4.x 配套的 KSP 版本。
+#     3. 结论：不存在可用的注解处理链路 → 持久层改为手写 SQLite（SQLiteOpenHelper），
+#        依赖注入改为手写容器。
+#   收益不只是"能构建"：手写 SQLite 让 BLOB 外置、op_log 单调 seq、
+#   全库导出这些需求可以直接控制事务边界，且不需要为它引入代码生成。
+
+[libraries]
+# ---- 当前启用 ----
+compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+compose-ui = { group = "androidx.compose.ui", name = "ui" }
+compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+compose-ui-text = { group = "androidx.compose.ui", name = "ui-text" }
+compose-ui-unit = { group = "androidx.compose.ui", name = "ui-unit" }
+compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+# 图标只要 core 这一份（Add / Search / Settings / 箭头这一批常用图标）。
+# **不要**换回 material-icons-extended：它把 5000 多个图标全编进 dex，
+# 而本项目实际只用 12 个 extended 独有图标，已经抄进 InkIcons.kt（M37）。
+compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
+androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# ---- 测试 ----
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestJunit" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+# 设备端（connectedAndroidTest）用 Compose 测试：它注入的是**真实**的 MotionEvent，
+# 走真实的窗口分发 —— Robolectric 里没有这一层（见 M7 记录）。
+compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+
+# ---- Jetpack Ink ----
+# 注意：ink-storage 只序列化 StrokeInputBatch，Brush 必须自己序列化（§7.3）
+ink-authoring = { group = "androidx.ink", name = "ink-authoring", version.ref = "ink" }
+ink-authoring-compose = { group = "androidx.ink", name = "ink-authoring-compose", version.ref = "ink" }
+ink-strokes = { group = "androidx.ink", name = "ink-strokes", version.ref = "ink" }
+ink-brush = { group = "androidx.ink", name = "ink-brush", version.ref = "ink" }
+ink-geometry = { group = "androidx.ink", name = "ink-geometry", version.ref = "ink" }
+ink-rendering = { group = "androidx.ink", name = "ink-rendering", version.ref = "ink" }
+ink-storage = { group = "androidx.ink", name = "ink-storage", version.ref = "ink" }
+ink-nativeloader = { group = "androidx.ink", name = "ink-nativeloader", version.ref = "ink" }
+
+# ---- [已锁定未启用] androidx.pdf ----
+androidx-pdf-viewer-fragment = { group = "androidx.pdf", name = "pdf-viewer-fragment", version.ref = "androidxPdf" }
+androidx-pdf-ink = { group = "androidx.pdf", name = "pdf-ink", version.ref = "androidxPdf" }
+
+# ---- [已锁定未启用] Readium（只服务 EPUB，PDF 已与它解耦，见 §3.2）----
+readium-shared = { group = "org.readium.kotlin-toolkit", name = "readium-shared", version.ref = "readium" }
+readium-streamer = { group = "org.readium.kotlin-toolkit", name = "readium-streamer", version.ref = "readium" }
+readium-navigator = { group = "org.readium.kotlin-toolkit", name = "readium-navigator", version.ref = "readium" }
+
+# ---- 文本处理 ----
+commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "commonmark" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+
+# ★ 这里没有 org.jetbrains.kotlin.android，而且不能加。
+#   AGP 9.0 起 Kotlin 支持已内建（built-in Kotlin，默认开启）；
+#   再应用 kotlin-android 会直接构建失败：
+#     "The 'org.jetbrains.kotlin.android' plugin is no longer required for Kotlin support since AGP 9.0."
+#   Android 模块（:app 等）因此完全不声明 Kotlin 插件，KGP 由 AGP 带入 classpath；
+#   纯 Kotlin JVM 模块（:core:model / :core:anchoring）才用下面这个 kotlin-jvm。
+#   两者共用同一个 `kotlin` 版本号：Gradle 取 classpath 上的最高版，因此这里写 2.4.21
+#   会把 AGP 自带的 KGP 一并提升到 2.4.21 —— compose 编译插件必须与它同版，
+#   这正是把 kotlin / kotlin-compose / kotlin-serialization 指向同一个 version.ref 的原因。
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
