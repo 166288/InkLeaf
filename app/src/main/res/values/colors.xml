@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 纸面色。与 dev.inkleaf.core.ui.InkLeafTokens.PaperLight 保持同值：
+     两处写同一个颜色不理想，但 XML 资源与 Compose 的 Color 之间没有共享机制；
+     用注释把耦合点标出来，比引入一套多主题打包方案便宜得多。 -->
+<resources>
+    <color name="inkleaf_paper">#FBF9F4</color>
+</resources>

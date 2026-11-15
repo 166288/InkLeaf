@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  前景层：空的。
+
+  这一版图标的墨色与叶片是**位图**（`@mipmap/ic_launcher_art`），已经烘焙进
+  背景层，这样能一比一还原设计定稿的配色与软阴影；VectorDrawable 手绘不出
+  那条带卷圈的叶梗。前景层因此不再画任何东西，只留一层透明，保持
+  `adaptive-icon` 三层的结构不变（`LauncherIconTest` 仍会断言它在）。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,0h108v108h-108z" />
+</vector>

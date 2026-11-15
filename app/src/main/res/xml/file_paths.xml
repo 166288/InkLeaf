@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FileProvider 只对外给这一个目录：本应用分享出去的东西**只有**导出的那一页 PNG。
+
+  刻意不给 `external-path` / `external-files-path` 之类更宽的口子 ——
+  "能分享"的范围一旦大于"该分享"的范围，任何一个读取 URI 的第三方 App
+  都能顺手把书库里的 EPUB 一起要走。本应用至今不申请任何权限，
+  这条边界不能由一个随手加的路径配置破掉。
+-->
+<paths>
+    <cache-path name="shared-page" path="shared/" />
+</paths>
